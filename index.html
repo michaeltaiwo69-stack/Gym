@@ -1,0 +1,882 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rep Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a gym-floor training card. Body parts are coded by bumper-plate colour per region
+   (push red, pull blue, legs yellow, arms green, core/conditioning iron grey). */
+:root {
+  --bg: #eceff2;
+  --surface: #ffffff;
+  --sunk: #e2e6ea;
+  --ink: #15181c;
+  --muted: #59616b;
+  --line: #d3d8de;
+  --accent: #c8251f;
+  --accent-ink: #ffffff;
+  --push: #d12a24;
+  --pull: #1e5cc0;
+  --legs: #e3a600;
+  --arms: #2c8a4b;
+  --core: #6b7480;
+  --good: #23824a;
+  --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1113; --surface: #181b1f; --sunk: #22262b; --ink: #eceef1; --muted: #9aa3ad;
+    --line: #2d3238; --accent: #ff5148; --accent-ink: #160505;
+    --push: #ff5a50; --pull: #5c93ff; --legs: #f3c330; --arms: #4fc47b; --core: #a4adb7; --good: #52c47f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1113; --surface: #181b1f; --sunk: #22262b; --ink: #eceef1; --muted: #9aa3ad;
+  --line: #2d3238; --accent: #ff5148; --accent-ink: #160505;
+  --push: #ff5a50; --pull: #5c93ff; --legs: #f3c330; --arms: #4fc47b; --core: #a4adb7; --good: #52c47f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 0 120px; }
+
+/* Header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.top-inner { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 12px 0; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 {
+  font-family: var(--font-display); font-weight: 900; font-size: 34px; line-height: 1;
+  margin: 0; letter-spacing: .01em; text-transform: uppercase;
+}
+.brand h1 span { color: var(--accent); }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-top: 10px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button {
+  font: 600 14px var(--font-body); color: var(--muted); background: none; border: 0;
+  padding: 8px 10px 10px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+nav.tabs button .count {
+  font: 700 11px var(--font-mono); background: var(--accent); color: var(--accent-ink);
+  border-radius: 999px; padding: 1px 6px; margin-left: 4px;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+
+h2 { font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1.05; margin: 0; text-transform: uppercase; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; line-height: 1.3; text-wrap: balance; }
+.lead { color: var(--muted); max-width: 65ch; margin: 6px 0 0; }
+.eyebrow { font: 700 11px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.section-head { padding-block: 24px 16px; display: grid; gap: 4px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Region dots */
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; background: var(--c, var(--core)); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c) 60%, #000 40%); }
+[data-region="push"] { --c: var(--push); }
+[data-region="pull"] { --c: var(--pull); }
+[data-region="legs"] { --c: var(--legs); }
+[data-region="arms"] { --c: var(--arms); }
+[data-region="core"] { --c: var(--core); }
+
+/* Muscle picker */
+.picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.picker button {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 14px var(--font-body); color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 14px 7px 11px; cursor: pointer;
+}
+.picker button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.muscle-head {
+  margin-top: 24px; display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; align-items: end;
+  border-top: 6px solid var(--c); padding-top: 16px;
+}
+.muscle-head .target { text-align: right; }
+.muscle-head .target b { font: 700 26px var(--font-mono); display: block; line-height: 1.1; }
+@media (max-width: 560px) { .muscle-head { grid-template-columns: 1fr; } .muscle-head .target { text-align: left; } }
+.note { margin: 12px 0 0; padding: 12px 14px; background: var(--sunk); border-radius: var(--radius); max-width: 72ch; font-size: 14px; }
+
+.ex-list { display: grid; gap: 10px; margin-top: 16px; }
+.ex {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 14px 16px;
+}
+.ex .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.ex .meta .mono { color: var(--ink); font-weight: 700; }
+.ex .body { grid-column: 1 / -1; display: grid; gap: 6px; font-size: 14px; max-width: 75ch; }
+.ex .body p { margin: 0; }
+.ex .body .why { color: var(--muted); }
+.ex .body .why b { color: var(--ink); font-weight: 600; }
+.badge { font: 700 10px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--sunk); color: var(--ink); white-space: nowrap; }
+.badge.top { background: var(--accent); color: var(--accent-ink); }
+
+.btn {
+  font: 600 13px var(--font-body); border-radius: 8px; padding: 8px 12px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); white-space: nowrap;
+}
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.added { background: var(--sunk); color: var(--good); border-color: var(--line); }
+.btn.ghost { background: none; }
+.btn.danger { color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: default; }
+.ex .actions { align-self: start; }
+
+/* Programs */
+.prog-select { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.prog-card {
+  text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px;
+}
+.prog-card[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.prog-card .goal { font-size: 13px; color: var(--muted); }
+.prog-card b { font-family: var(--font-display); font-size: 22px; text-transform: uppercase; font-weight: 800; line-height: 1.1; }
+.week { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.week div { flex: 1 1 0; min-width: 38px; text-align: center; padding: 6px 2px; border-radius: 6px; background: var(--sunk); font: 700 11px var(--font-mono); color: var(--muted); }
+.week div.on { background: var(--ink); color: var(--bg); }
+.week div small { display: block; font-weight: 500; font-size: 10px; }
+.days { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+.day header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.day ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.day li { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.day li .mono { font-size: 12px; color: var(--muted); }
+.extra { margin-top: 16px; display: grid; gap: 8px; }
+.extra p { margin: 0; }
+
+/* Science */
+.sci { display: grid; gap: 12px; }
+.claim { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; grid-template-columns: 150px 1fr; gap: 6px 20px; }
+.claim .k { font: 800 22px/1.05 var(--font-display); text-transform: uppercase; }
+.claim .k small { display: block; font: 700 11px var(--font-mono); letter-spacing: .1em; color: var(--muted); margin-top: 6px; }
+.claim .v { min-width: 0; display: grid; gap: 8px; max-width: 70ch; }
+.claim .v p { margin: 0; }
+.claim .do { font-weight: 600; }
+.claim .do::before { content: "Do this → "; color: var(--accent); }
+.claim .src { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.claim .src a { color: var(--muted); }
+@media (max-width: 640px) { .claim { grid-template-columns: 1fr; } }
+.rates { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.rate { background: var(--ink); color: var(--bg); border-radius: var(--radius); padding: 14px 16px; }
+.rate b { font: 700 24px var(--font-mono); display: block; }
+.rate span { font-size: 13px; opacity: .8; }
+
+/* Fuel */
+.fuel { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .fuel { grid-template-columns: 1fr; } }
+form.calc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; }
+.field { display: grid; gap: 4px; }
+.field label, .field .lbl { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input, select { font: 500 15px var(--font-body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; font: 600 13px var(--font-body); padding: 8px 6px; background: var(--bg); color: var(--muted); border: 0; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.out { display: grid; gap: 12px; }
+.big-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; min-width: 0; }
+.stat .eyebrow { font-size: 10px; letter-spacing: .06em; }
+.stat .n { font: 700 clamp(18px, 5vw, 30px)/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.stat .n small { font-size: 14px; color: var(--muted); font-weight: 500; }
+.stat.hero { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.stat.hero .n small, .stat.hero .eyebrow { color: color-mix(in srgb, var(--bg) 70%, transparent); }
+.plan { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.plan ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+
+/* Log */
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); padding: 24px; display: grid; gap: 10px; justify-items: start; }
+.empty p { margin: 0; color: var(--muted); max-width: 60ch; }
+.sess-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.log-ex { background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--c); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; margin-top: 10px; }
+.log-ex header { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.log-ex .last { font-size: 12.5px; color: var(--muted); }
+.sets { display: grid; gap: 6px; }
+.set { display: grid; grid-template-columns: 34px 1fr 1fr 44px 32px; gap: 8px; align-items: center; }
+.set .no { font: 700 13px var(--font-mono); color: var(--muted); }
+.set input[type="number"] { font-family: var(--font-mono); text-align: center; padding: 7px 4px; }
+.set.done input[type="number"] { border-color: var(--good); }
+.check { width: 44px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; font: 700 16px var(--font-body); }
+.check[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: #fff; }
+.x { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; }
+.set-labels { display: grid; grid-template-columns: 34px 1fr 1fr 44px 32px; gap: 8px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; text-align: center; }
+.set-labels :first-child { text-align: left; }
+.msg { font-size: 13px; color: var(--accent); }
+.hist { display: grid; gap: 8px; margin-top: 12px; }
+.hist details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }
+.hist summary { cursor: pointer; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 600; }
+.hist summary .mono { color: var(--muted); font-weight: 500; font-size: 13px; }
+.hist ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; }
+.sample-tag { font: 700 10px var(--font-mono); letter-spacing: .08em; background: var(--legs); color: #1a1400; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+
+/* Bottom session bar */
+.sessbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--bg);
+  display: flex; justify-content: center;
+}
+.sessbar .in { max-width: 980px; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sessbar .btn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.disclaimer { margin-top: 32px; font-size: 12px; color: var(--muted); max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) {
+  .ex, .day, .claim { transition: border-color .15s; }
+}
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1>Rep<span>Lab</span></h1>
+      <p>Workouts by body part, built on the training research.</p>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+<div class="sessbar" id="sessbar" hidden></div>
+
+<script>
+/* ---------- Data ---------- */
+const REGIONS = {
+  push: "Push (chest, shoulders)",
+  pull: "Pull (back)",
+  legs: "Legs & glutes",
+  arms: "Arms",
+  core: "Core & conditioning"
+};
+
+const MUSCLES = [
+  { id: "chest", name: "Chest", region: "push", sets: "10–20",
+    note: "Presses build most of the chest. Add one fly that loads the pecs in the stretched position, and use a low incline for the upper chest.",
+    ex: [
+      { n: "Barbell Bench Press", eq: "Barbell", rx: "3–4 × 5–10", rest: "2–3 min", top: true,
+        cue: "Pinch shoulder blades back and down, feet planted. Lower to the lower chest, press up and slightly back.",
+        why: "Heavy compound lift you can overload for years." },
+      { n: "Incline Dumbbell Press", eq: "Dumbbells", rx: "3 × 8–12", rest: "2–3 min", top: true,
+        cue: "Bench at about 30°. Lower until you feel a deep chest stretch, elbows roughly 45° from your torso.",
+        why: "A low incline puts more of the work on the upper (clavicular) chest." },
+      { n: "Weighted Dip", eq: "Dip bars", rx: "3 × 6–12", rest: "2 min",
+        cue: "Lean forward a little and sink until your shoulders are just below your elbows.",
+        why: "Deep stretch on the lower chest and easy to load with a belt." },
+      { n: "Cable Fly", eq: "Cable", rx: "3 × 10–15", rest: "90 s",
+        cue: "Soft elbows. Open wide until the chest stretches, then bring your hands together.",
+        why: "Keeps tension on the muscle at long lengths, where the growth stimulus appears strongest." },
+      { n: "Deficit Push-Up", eq: "Bodyweight", rx: "3 × 1–2 shy of failure", rest: "90 s",
+        cue: "Hands on plates or handles so your chest sinks below hand level.",
+        why: "Push-ups taken close to failure built similar chest size to bench press.", src: "Kikuchi & Nakazato 2017" }
+    ] },
+  { id: "shoulders", name: "Shoulders", region: "push", sets: "8–16 (side & rear)",
+    note: "Presses already hit the front delts hard. Side and rear delts need their own direct work, and they respond well to higher reps.",
+    ex: [
+      { n: "Dumbbell Lateral Raise", eq: "Dumbbells", rx: "3–4 × 12–20", rest: "60–90 s", top: true,
+        cue: "Lead with the elbows, raise to shoulder height, lower under control. Lean slightly forward.",
+        why: "The main builder of side delts, which create shoulder width." },
+      { n: "Cable Lateral Raise", eq: "Cable", rx: "3 × 12–20", rest: "60–90 s",
+        cue: "Cable behind your body at hip height. Start with the hand across your hip.",
+        why: "The cable keeps tension at the bottom, where a dumbbell goes slack." },
+      { n: "Overhead Press", eq: "Barbell or dumbbells", rx: "3 × 6–10", rest: "2–3 min", top: true,
+        cue: "Glutes and abs tight, press straight up and move your head through once the bar passes it.",
+        why: "Heavy pressing for the front delts and triceps." },
+      { n: "Reverse Pec Deck", eq: "Machine", rx: "3 × 15–20", rest: "60–90 s",
+        cue: "Arms nearly straight, sweep back in a wide arc, pause, return slowly.",
+        why: "Isolates the rear delts, which rows only partly train." },
+      { n: "Face Pull", eq: "Cable + rope", rx: "3 × 12–20", rest: "60–90 s",
+        cue: "Pull the rope toward your forehead and spread the ends apart, finishing with elbows high.",
+        why: "Rear delts and upper back, and good for shoulder balance." }
+    ] },
+  { id: "back", name: "Back", region: "pull", sets: "10–20",
+    note: "Use one vertical pull (lats) and one horizontal pull (mid-back) each week. Let the shoulder blades move through a full range.",
+    ex: [
+      { n: "Pull-Up", eq: "Bar", rx: "3–4 × 6–10", rest: "2–3 min", top: true,
+        cue: "Start from a dead hang, drive elbows down to your sides, chest toward the bar.",
+        why: "Big lat builder. Add a belt with weight once you can do 12 clean reps." },
+      { n: "Lat Pulldown", eq: "Cable", rx: "3 × 8–12", rest: "2 min",
+        cue: "Let the arms reach fully overhead at the top, pull to the upper chest.",
+        why: "Same pattern as a pull-up but adjustable to any strength level." },
+      { n: "Chest-Supported Row", eq: "Dumbbells or machine", rx: "3–4 × 8–12", rest: "2 min", top: true,
+        cue: "Chest on an incline bench, reach long at the bottom, row elbows past your torso.",
+        why: "Loads the mid-back without the lower back becoming the limit." },
+      { n: "Seated Cable Row", eq: "Cable", rx: "3 × 10–12", rest: "2 min",
+        cue: "Let the shoulders stretch forward, then sit tall and row to the belly.",
+        why: "Steady tension through a long range of motion." },
+      { n: "One-Arm Dumbbell Row", eq: "Dumbbell", rx: "3 × 8–12 / side", rest: "90 s",
+        cue: "Hand and knee on a bench. Pull the dumbbell toward your hip, not your armpit.",
+        why: "A big stretch for the lats, one side at a time." }
+    ] },
+  { id: "biceps", name: "Biceps", region: "arms", sets: "6–12 direct",
+    note: "Rows and pull-ups already work the biceps. Add curls that load the arm behind the body or at full extension.",
+    ex: [
+      { n: "Incline Dumbbell Curl", eq: "Dumbbells", rx: "3 × 8–15", rest: "90 s", top: true,
+        cue: "Bench at 45–60°, arms hanging behind you. Curl without moving the elbows forward.",
+        why: "The arm-behind-body position stretches the biceps under load." },
+      { n: "EZ-Bar Curl", eq: "EZ bar", rx: "3 × 8–12", rest: "90 s",
+        cue: "Elbows pinned to the sides, full lockout at the bottom.",
+        why: "Easy to overload and gentler on the wrists than a straight bar." },
+      { n: "Preacher Curl", eq: "EZ bar or machine", rx: "3 × 10–15", rest: "90 s",
+        cue: "Lower all the way to a straight arm, slowly. Do not bounce out of the bottom.",
+        why: "Hardest at the bottom, where the biceps is longest." },
+      { n: "Hammer Curl", eq: "Dumbbells", rx: "3 × 10–15", rest: "60–90 s",
+        cue: "Neutral grip, thumbs up, curl across the body or straight up.",
+        why: "Trains the brachialis and forearm, which add arm thickness." }
+    ] },
+  { id: "triceps", name: "Triceps", region: "arms", sets: "6–12 direct",
+    note: "The triceps make up about two-thirds of upper-arm size. The long head grows best when trained with the arm overhead.",
+    ex: [
+      { n: "Overhead Cable Triceps Extension", eq: "Cable + rope", rx: "3 × 10–15", rest: "90 s", top: true,
+        cue: "Face away from the cable, elbows by your ears, let the hands drop behind your head.",
+        why: "Overhead extensions built more total triceps than pushdowns in a direct comparison.", src: "Maeo et al. 2023" },
+      { n: "Close-Grip Bench Press", eq: "Barbell", rx: "3 × 6–10", rest: "2 min",
+        cue: "Hands shoulder-width, elbows tucked, touch the lower chest.",
+        why: "Lets the triceps handle heavy loads." },
+      { n: "Cable Pushdown", eq: "Cable", rx: "3 × 10–15", rest: "60–90 s",
+        cue: "Elbows fixed at your sides, lock out fully and squeeze.",
+        why: "Simple, joint-friendly volume for the lateral and medial heads." },
+      { n: "EZ-Bar Skull Crusher", eq: "EZ bar", rx: "3 × 8–12", rest: "90 s",
+        cue: "Lower the bar behind your head, not to the forehead, to stretch the long head.",
+        why: "Long-head stretch with free weights." }
+    ] },
+  { id: "quads", name: "Quads", region: "legs", sets: "10–20",
+    note: "Squats grow three of the four quad heads. The rectus femoris barely grew from squats alone, so add leg extensions.",
+    ex: [
+      { n: "Back Squat", eq: "Barbell", rx: "3–4 × 5–10", rest: "3 min", top: true,
+        cue: "Brace, sit between your heels, go as deep as you can with a neutral back.",
+        why: "Full-depth squats built more glute and adductor muscle than half squats.", src: "Kubo et al. 2019" },
+      { n: "Hack Squat or Leg Press", eq: "Machine", rx: "3 × 8–12", rest: "2–3 min", top: true,
+        cue: "Feet low and shoulder-width, knees travel forward over the toes, full depth.",
+        why: "Heavy quad work without balance or lower-back fatigue limiting the set." },
+      { n: "Bulgarian Split Squat", eq: "Dumbbells", rx: "3 × 8–12 / leg", rest: "2 min",
+        cue: "Rear foot on a bench. Short stance for quads, longer stance for glutes.",
+        why: "Deep single-leg stretch that fixes left/right imbalances." },
+      { n: "Leg Extension", eq: "Machine", rx: "3 × 10–15", rest: "90 s", top: true,
+        cue: "Recline the seat if you can, pause at the top, lower to full knee bend.",
+        why: "Trains the rectus femoris that squats miss. Bottom-range reps grew the quads more than top-range reps.", src: "Pedrosa et al. 2022" }
+    ] },
+  { id: "hamstrings", name: "Hamstrings", region: "legs", sets: "8–16",
+    note: "Train both jobs of the hamstrings: hinging at the hip and bending the knee.",
+    ex: [
+      { n: "Romanian Deadlift", eq: "Barbell or dumbbells", rx: "3 × 6–10", rest: "2–3 min", top: true,
+        cue: "Soft knees, push the hips back until the hamstrings are fully stretched, keep the bar against your legs.",
+        why: "The best hip-hinge for hamstring stretch under heavy load." },
+      { n: "Seated Leg Curl", eq: "Machine", rx: "3 × 10–15", rest: "90 s", top: true,
+        cue: "Lean forward slightly to stretch the hamstrings more. Control the return.",
+        why: "Grew the hamstrings clearly more than the lying leg curl because the hip is bent.", src: "Maeo et al. 2021" },
+      { n: "Lying Leg Curl", eq: "Machine", rx: "3 × 10–15", rest: "90 s",
+        cue: "Hips pressed into the pad, curl fully, lower slowly.",
+        why: "A good second curl when the seated machine is taken." },
+      { n: "Nordic Curl", eq: "Bodyweight", rx: "3 × 4–8", rest: "2 min",
+        cue: "Anchor the heels, lower as slowly as you can, push up with the hands.",
+        why: "Very strong eccentric load. Also lowers hamstring injury risk in sport." }
+    ] },
+  { id: "glutes", name: "Glutes", region: "legs", sets: "8–16",
+    note: "Deep squats and lunges already train the glutes hard. Hip thrusts and squats built similar glute size in a head-to-head study.",
+    ex: [
+      { n: "Barbell Hip Thrust", eq: "Barbell + bench", rx: "3–4 × 8–12", rest: "2 min", top: true,
+        cue: "Shins vertical at the top, tuck the chin, lock out with the glutes, not the lower back.",
+        why: "Heaviest load at the top. Matched the back squat for glute growth.", src: "Plotkin et al. 2023" },
+      { n: "Walking Lunge", eq: "Dumbbells", rx: "3 × 10–12 / leg", rest: "2 min", top: true,
+        cue: "Long steps and a slight forward lean, let the rear knee nearly touch the floor.",
+        why: "Deep hip flexion under load, which the glutes respond to." },
+      { n: "45° Back Extension", eq: "Bench", rx: "3 × 10–15", rest: "90 s",
+        cue: "Round the upper back slightly and push the hips into the pad to bias the glutes.",
+        why: "Trains the glutes and hamstrings with little spinal load." },
+      { n: "Cable or Machine Hip Abduction", eq: "Machine", rx: "3 × 12–20", rest: "60 s",
+        cue: "Lean forward a little, push the knees out, pause at the top.",
+        why: "Targets the upper glutes (glute medius) that squats underwork." }
+    ] },
+  { id: "calves", name: "Calves", region: "legs", sets: "8–16",
+    note: "Calves respond best to slow reps and a pause at the bottom. Bouncing wastes most of the stimulus.",
+    ex: [
+      { n: "Standing Calf Raise", eq: "Machine or Smith", rx: "4 × 8–15", rest: "60–90 s", top: true,
+        cue: "Pause 2 seconds in the deepest stretch, rise all the way up, no bouncing.",
+        why: "Partial reps in the stretched half grew the calves more than full reps.", src: "Kassiano et al. 2023" },
+      { n: "Seated Calf Raise", eq: "Machine", rx: "3 × 12–20", rest: "60 s",
+        cue: "Same deep pause at the bottom.",
+        why: "Bent knees shift the work to the soleus, the deeper calf muscle." },
+      { n: "Leg Press Calf Press", eq: "Leg press", rx: "3 × 10–15", rest: "60 s",
+        cue: "Balls of the feet on the edge of the plate, knees almost locked.",
+        why: "Lets you load the calves heavily without a dedicated machine." }
+    ] },
+  { id: "core", name: "Core", region: "core", sets: "4–10",
+    note: "Ab training builds the abs but does not burn the fat over them. Visible abs come from a lower body-fat level.",
+    ex: [
+      { n: "Hanging Leg Raise", eq: "Bar", rx: "3 × 8–15", rest: "90 s", top: true,
+        cue: "Curl the pelvis up toward the ribs, do not just swing the legs.",
+        why: "Trains the lower abs and hip flexors through a long range." },
+      { n: "Cable Crunch", eq: "Cable + rope", rx: "3 × 10–15", rest: "90 s", top: true,
+        cue: "Kneel, hold the rope by your head, crunch the ribs toward the hips.",
+        why: "Loaded spinal flexion you can progress like any other lift." },
+      { n: "Ab Wheel Rollout", eq: "Ab wheel", rx: "3 × 6–12", rest: "90 s",
+        cue: "Ribs down, roll out only as far as you can without the lower back sagging.",
+        why: "Strong anti-extension work for the whole front of the core." },
+      { n: "Pallof Press", eq: "Cable or band", rx: "3 × 10 / side", rest: "60 s",
+        cue: "Stand side-on to the cable, press the handle out and resist the twist.",
+        why: "Anti-rotation strength that carries over to heavy lifts." }
+    ] },
+  { id: "cardio", name: "Fat-Loss Cardio", region: "core", sets: "2–4 sessions",
+    note: "The calorie deficit causes fat loss. Cardio adds to the deficit and improves heart health. Interval and steady cardio produce similar fat loss, so choose the one you will keep doing.",
+    ex: [
+      { n: "Daily Steps", eq: "None", rx: "8,000–10,000 / day", rest: "—", top: true,
+        cue: "Walk after meals, take calls on foot, park far away.",
+        why: "Everyday movement is the most adjustable part of daily calorie burn and barely affects lifting recovery." },
+      { n: "Incline Treadmill Walk", eq: "Treadmill", rx: "30–45 min", rest: "—", top: true,
+        cue: "10–12% incline, about 5 km/h, conversational pace. Do not hold the rails.",
+        why: "Low-impact, easy to recover from, and burns plenty of calories." },
+      { n: "Bike Intervals", eq: "Bike or rower", rx: "8–10 × 30 s hard / 90 s easy", rest: "—",
+        cue: "Warm up 5 minutes. Hard efforts at about 8–9 out of 10.",
+        why: "Similar fat loss to steady cardio in less time.", src: "Wewege et al. 2017" },
+      { n: "Sled Push", eq: "Sled", rx: "6–8 × 20 m", rest: "60–90 s",
+        cue: "Low body angle, short powerful steps, arms locked.",
+        why: "Hard conditioning with no eccentric phase, so it causes little soreness." }
+    ] }
+];
+
+const EX = {};
+MUSCLES.forEach(m => m.ex.forEach(e => { EX[e.n] = { ...e, muscle: m.id, region: m.region }; }));
+
+const PROGRAMS = [
+  { id: "ul", name: "Upper / Lower", days: 4, goal: "Best all-round muscle builder", level: "Beginner to intermediate",
+    week: ["Upper A", "Lower A", "", "Upper B", "Lower B", "", ""],
+    why: "Each muscle is trained twice a week for about 10–16 hard sets, which sits in the range the research supports for growth.",
+    plan: [
+      { day: "Upper A", items: [["Barbell Bench Press","4 × 5–8"],["Chest-Supported Row","4 × 8–10"],["Incline Dumbbell Press","3 × 8–12"],["Lat Pulldown","3 × 10–12"],["Dumbbell Lateral Raise","3 × 12–20"],["Overhead Cable Triceps Extension","3 × 10–15"],["Incline Dumbbell Curl","3 × 10–15"]] },
+      { day: "Lower A", items: [["Back Squat","4 × 5–8"],["Romanian Deadlift","3 × 8–10"],["Leg Extension","3 × 10–15"],["Seated Leg Curl","3 × 10–15"],["Standing Calf Raise","4 × 8–12"],["Hanging Leg Raise","3 × 10–15"]] },
+      { day: "Upper B", items: [["Overhead Press","3 × 6–10"],["Pull-Up","4 × 6–10"],["Weighted Dip","3 × 8–12"],["Seated Cable Row","3 × 10–12"],["Cable Fly","3 × 12–15"],["Reverse Pec Deck","3 × 15–20"],["Hammer Curl","3 × 10–12"],["Cable Pushdown","3 × 12–15"]] },
+      { day: "Lower B", items: [["Barbell Hip Thrust","4 × 8–12"],["Bulgarian Split Squat","3 × 8–12 / leg"],["Hack Squat or Leg Press","3 × 10–15"],["Lying Leg Curl","3 × 10–15"],["Seated Calf Raise","3 × 12–20"],["Cable Crunch","3 × 10–15"]] }
+    ],
+    extra: ["Add 1–2 reps or a little weight each week. When you hit the top of the rep range on every set, add load.", "Every 6–8 weeks, if you feel run down, take a lighter week with half the sets."] },
+  { id: "fb", name: "Full Body Fat Loss", days: 3, goal: "Lose fat, keep muscle", level: "Any level, short on time",
+    week: ["Full A", "Walk", "Full B", "Walk", "Full C", "Intervals", ""],
+    why: "Three lifting days keep every muscle trained twice or more per week, which is the signal to hold on to muscle in a deficit. Cardio and steps add to the deficit without hurting recovery.",
+    plan: [
+      { day: "Full A", items: [["Back Squat","3 × 6–10"],["Barbell Bench Press","3 × 6–10"],["Chest-Supported Row","3 × 8–12"],["Seated Leg Curl","2 × 10–15"],["Dumbbell Lateral Raise","2 × 12–20"],["Cable Crunch","2 × 10–15"]] },
+      { day: "Full B", items: [["Romanian Deadlift","3 × 6–10"],["Overhead Press","3 × 6–10"],["Pull-Up","3 × 6–10"],["Leg Extension","2 × 10–15"],["Incline Dumbbell Curl","2 × 10–15"],["Overhead Cable Triceps Extension","2 × 10–15"]] },
+      { day: "Full C", items: [["Hack Squat or Leg Press","3 × 8–12"],["Incline Dumbbell Press","3 × 8–12"],["Lat Pulldown","3 × 8–12"],["Barbell Hip Thrust","3 × 8–12"],["Standing Calf Raise","3 × 8–15"],["Hanging Leg Raise","2 × 10–15"]] },
+      { day: "Cardio", items: [["Incline Treadmill Walk","30–45 min (Walk days)"],["Bike Intervals","8–10 rounds (Intervals day)"],["Daily Steps","8,000–10,000 every day"]] }
+    ],
+    extra: ["Keep the weight on the bar. Lifting heavy is what tells your body to keep muscle during a diet.", "Eat high protein (see Fuel) and aim to lose 0.5–1% of body weight per week."] },
+  { id: "ppl", name: "Push / Pull / Legs", days: 6, goal: "Maximum volume for experienced lifters", level: "Intermediate to advanced",
+    week: ["Push", "Pull", "Legs", "Push", "Pull", "Legs", ""],
+    why: "Running the rotation twice gives each muscle 2 sessions and 14–20 sets a week. Use it only if you can recover from six days.",
+    plan: [
+      { day: "Push", items: [["Barbell Bench Press","4 × 5–8"],["Overhead Press","3 × 6–10"],["Incline Dumbbell Press","3 × 8–12"],["Cable Fly","3 × 12–15"],["Cable Lateral Raise","4 × 12–20"],["Overhead Cable Triceps Extension","3 × 10–15"],["Cable Pushdown","2 × 12–15"]] },
+      { day: "Pull", items: [["Pull-Up","4 × 6–10"],["Chest-Supported Row","3 × 8–12"],["One-Arm Dumbbell Row","3 × 8–12 / side"],["Face Pull","3 × 12–20"],["Reverse Pec Deck","3 × 15–20"],["Incline Dumbbell Curl","3 × 8–15"],["Hammer Curl","2 × 10–15"]] },
+      { day: "Legs", items: [["Back Squat","4 × 5–8"],["Romanian Deadlift","3 × 6–10"],["Leg Extension","3 × 10–15"],["Seated Leg Curl","3 × 10–15"],["Walking Lunge","2 × 10–12 / leg"],["Standing Calf Raise","4 × 8–15"],["Cable Crunch","3 × 10–15"]] }
+    ],
+    extra: ["Second rotation: swap the main lift (e.g. Hack Squat for Back Squat, Weighted Dip for Bench) to vary the stimulus.", "If performance drops two sessions in a row, cut a set from each exercise."] }
+];
+
+const SCIENCE = [
+  { k: "Volume", tag: "Muscle", claim: "More weekly sets build more muscle, up to a point. About 10 or more hard sets per muscle per week clearly beat fewer, with smaller gains beyond about 20.",
+    do: "Start at 10–12 hard sets per muscle per week. Add sets only if progress stalls and you recover well.",
+    src: ["Schoenfeld, Ogborn & Krieger 2017, J Sports Sci", "Pelland et al. 2024, volume & frequency meta-regression"] },
+  { k: "Frequency", tag: "Muscle", claim: "Training a muscle at least twice a week produced more growth than once a week when volume was spread out.",
+    do: "Hit every muscle 2× per week (Upper/Lower or Full Body).",
+    src: ["Schoenfeld, Ogborn & Krieger 2016, Sports Med"] },
+  { k: "Effort", tag: "Muscle", claim: "Light and heavy loads grow muscle about equally when sets are taken close to failure. Growth improves as sets get closer to failure.",
+    do: "Use about 5–30 reps per set and end each set 0–3 reps short of failure. Go to failure mainly on isolation moves.",
+    src: ["Schoenfeld et al. 2017, low vs. high load meta-analysis", "Refalo et al. 2023, Sports Med"] },
+  { k: "Overload", tag: "Muscle", claim: "Adding reps or adding load each week both produce similar growth. What matters is doing more over time.",
+    do: "Log every set. Beat last time by a rep or a small weight jump.",
+    src: ["Plotkin et al. 2022, PeerJ"] },
+  { k: "Stretch", tag: "Muscle", claim: "Exercises that load a muscle when it is stretched built more muscle in several direct comparisons (seated vs. lying curls, overhead vs. pushdowns, bottom-half partials).",
+    do: "Use full range of motion and control the stretched part of every rep. Pick the stretch-loaded exercises marked TOP PICK.",
+    src: ["Maeo et al. 2021, MSSE", "Maeo et al. 2023, Eur J Sport Sci", "Pedrosa et al. 2022", "Wolf et al. 2023, range-of-motion meta-analysis"] },
+  { k: "Rest", tag: "Muscle", claim: "Three-minute rests built more muscle than one-minute rests on compound lifts, because you complete more reps.",
+    do: "Rest 2–3 min on big lifts, 60–90 s on isolation. Use supersets only to save time.",
+    src: ["Schoenfeld et al. 2016, J Strength Cond Res", "Singer et al. 2024, rest interval meta-analysis"] },
+  { k: "Protein", tag: "Both", claim: "Gains from training levelled off at about 1.6 g of protein per kg of body weight per day. The upper estimate was 2.2 g/kg.",
+    do: "Eat 1.6–2.2 g/kg per day (0.7–1 g per lb), split over 3–5 meals. Go to the high end when dieting.",
+    src: ["Morton et al. 2018, Br J Sports Med", "Helms et al. 2014, JISSN"] },
+  { k: "Deficit", tag: "Fat loss", claim: "Fat loss requires eating fewer calories than you burn. Losing about 0.7% of body weight per week kept more muscle than losing 1.4%.",
+    do: "Aim to lose 0.5–1% of body weight per week. Weigh daily and compare weekly averages.",
+    src: ["Garthe et al. 2011, IJSNEM", "Helms et al. 2014, JISSN"] },
+  { k: "Keep muscle", tag: "Fat loss", claim: "In a hard 4-week deficit, people who lifted and ate high protein gained lean mass while losing more fat than a lower-protein group.",
+    do: "Keep lifting heavy while dieting and keep protein high. Do not switch to only cardio.",
+    src: ["Longland et al. 2016, Am J Clin Nutr"] },
+  { k: "Cardio", tag: "Fat loss", claim: "Interval training and steady cardio produced similar fat loss. Intervals take less time.",
+    do: "Do 2–4 cardio sessions a week plus 8,000–10,000 daily steps, whichever style you enjoy.",
+    src: ["Wewege et al. 2017, Obes Rev"] },
+  { k: "Sleep", tag: "Both", claim: "Dieters sleeping 5.5 hours lost 55% less fat and more lean mass than when sleeping 8.5 hours on the same diet.",
+    do: "Get 7–9 hours. It is the cheapest recovery tool there is.",
+    src: ["Nedeltcheva et al. 2010, Ann Intern Med"] },
+  { k: "Creatine", tag: "Both", claim: "Creatine monohydrate is the best-supported supplement for strength and lean mass gains and is safe for healthy adults.",
+    do: "Take 3–5 g per day, any time. No loading phase is needed.",
+    src: ["Kreider et al. 2017, ISSN position stand"] },
+  { k: "Spot reduction", tag: "Fat loss", claim: "Six weeks of ab exercises did not reduce belly fat compared with a control group.",
+    do: "Train abs for strength and shape. Lose belly fat through the overall calorie deficit.",
+    src: ["Vispute et al. 2011, J Strength Cond Res"] }
+];
+
+/* ---------- State ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("replab:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("replab:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+const TABS = [["workouts","Workouts"],["programs","Programs"],["science","Science"],["fuel","Fuel"],["log","Log"]];
+const initialTab = (location.hash || "").slice(1);
+const state = {
+  tab: TABS.some(t => t[0] === initialTab) ? initialTab : store.get("tab", "workouts"),
+  muscle: store.get("muscle", "chest"),
+  program: store.get("program", "ul"),
+  session: store.get("session", null),
+  history: store.get("history", null),
+  fuel: store.get("fuel", { unit: "kg", sex: "m", age: 30, weight: 80, height: 178, activity: 1.55, goal: "lose", rate: 0.75 }),
+  msg: "",
+  confirmDiscard: false
+};
+const SAMPLE_HISTORY = [{ sample: true, date: Date.now() - 3 * 864e5, name: "Upper A (example)", items: [
+  { n: "Barbell Bench Press", sets: [{ w: 70, r: 8 }, { w: 70, r: 7 }, { w: 70, r: 6 }] },
+  { n: "Chest-Supported Row", sets: [{ w: 26, r: 10 }, { w: 26, r: 9 }, { w: 26, r: 9 }] },
+  { n: "Dumbbell Lateral Raise", sets: [{ w: 10, r: 16 }, { w: 10, r: 14 }, { w: 10, r: 13 }] }
+] }];
+if (!state.history) state.history = SAMPLE_HISTORY;
+
+function save() {
+  store.set("tab", state.tab); store.set("muscle", state.muscle); store.set("program", state.program);
+  store.set("session", state.session); store.set("history", state.history); store.set("fuel", state.fuel);
+}
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pubmed = t => "https://pubmed.ncbi.nlm.nih.gov/?term=" + encodeURIComponent(t.replace(/,.*$/, "").replace(/ et al\./, "").replace(/&/g, ""));
+const $ = s => document.querySelector(s);
+
+/* ---------- Session helpers ---------- */
+function inSession(n) { return !!(state.session && state.session.items.some(i => i.n === n)); }
+function defaultSets(rx) { const m = /^(\d+)/.exec(rx || ""); return Math.min(m ? +m[1] : 3, 6); }
+function addToSession(n, rx, name) {
+  if (!state.session) state.session = { started: Date.now(), name: name || "Custom session", items: [] };
+  if (inSession(n)) return;
+  const c = defaultSets(rx || EX[n].rx);
+  state.session.items.push({ n, rx: rx || EX[n].rx, sets: Array.from({ length: c }, () => ({ w: "", r: "", done: false })) });
+}
+function removeFromSession(n) {
+  if (!state.session) return;
+  state.session.items = state.session.items.filter(i => i.n !== n);
+  if (!state.session.items.length) state.session = null;
+}
+function lastFor(n) {
+  for (const h of state.history) {
+    const it = h.items.find(i => i.n === n);
+    if (it && it.sets.length) {
+      const best = it.sets.reduce((a, b) => (b.w * b.r > a.w * a.r ? b : a));
+      return { date: h.date, best, count: it.sets.length };
+    }
+  }
+  return null;
+}
+const unit = () => state.fuel.unit === "lb" ? "lb" : "kg";
+const fmtDate = t => new Date(t).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+
+/* ---------- Render ---------- */
+function renderTabs() {
+  const n = state.session ? state.session.items.length : 0;
+  $("#tabs").innerHTML = TABS.map(([id, label]) =>
+    `<button role="tab" data-tab="${id}" aria-selected="${state.tab === id}">${label}${id === "log" && n ? `<span class="count">${n}</span>` : ""}</button>`).join("");
+}
+
+function renderWorkouts() {
+  const m = MUSCLES.find(x => x.id === state.muscle) || MUSCLES[0];
+  return `
+  <div class="section-head">
+    <span class="eyebrow">Exercise library</span>
+    <h2>Pick a body part</h2>
+    <p class="lead">Top picks are the exercises with the strongest evidence or the best stretch under load. Tap <b>Add</b> to build today's session.</p>
+  </div>
+  <div class="picker">${MUSCLES.map(x => `<button data-muscle="${x.id}" data-region="${x.region}" aria-pressed="${x.id === m.id}"><span class="dot"></span>${x.name}</button>`).join("")}</div>
+  <div class="legend">${Object.entries(REGIONS).map(([k, v]) => `<span data-region="${k}"><span class="dot"></span>${v}</span>`).join("")}</div>
+
+  <div class="muscle-head" data-region="${m.region}">
+    <div><span class="eyebrow">${REGIONS[m.region]}</span><h2>${m.name}</h2></div>
+    <div class="target"><span class="eyebrow">${m.id === "cardio" ? "Per week" : "Hard sets / week"}</span><b>${m.sets}</b></div>
+  </div>
+  <p class="note">${m.note}</p>
+  <div class="ex-list">
+    ${m.ex.map(e => `
+      <article class="ex">
+        <div>
+          <h3>${e.n} ${e.top ? '<span class="badge top">Top pick</span>' : ""}</h3>
+          <div class="meta"><span class="mono">${e.rx}</span><span>Rest ${e.rest}</span><span>${e.eq}</span></div>
+        </div>
+        <div class="actions">${inSession(e.n)
+          ? `<button class="btn added" data-remove="${esc(e.n)}">✓ Added</button>`
+          : `<button class="btn primary" data-add="${esc(e.n)}">+ Add</button>`}</div>
+        <div class="body">
+          <p><b>How:</b> ${e.cue}</p>
+          <p class="why"><b>Why:</b> ${e.why}${e.src ? ` <a href="${pubmed(e.src)}" target="_blank" rel="noopener">(${e.src})</a>` : ""}</p>
+        </div>
+      </article>`).join("")}
+  </div>`;
+}
+
+function renderPrograms() {
+  const p = PROGRAMS.find(x => x.id === state.program) || PROGRAMS[0];
+  const dn = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  return `
+  <div class="section-head">
+    <span class="eyebrow">Weekly plans</span>
+    <h2>Choose a program</h2>
+    <p class="lead">Each plan follows the evidence: every muscle twice a week, 10–20 hard sets, big lifts first. Start any day as a session and log it.</p>
+  </div>
+  <div class="prog-select">${PROGRAMS.map(x => `
+    <button class="prog-card" data-program="${x.id}" aria-pressed="${x.id === p.id}">
+      <span class="eyebrow">${x.days} lifting days</span><b>${x.name}</b>
+      <span class="goal">${x.goal} · ${x.level}</span>
+    </button>`).join("")}</div>
+  <div class="week">${p.week.map((d, i) => `<div class="${d ? "on" : ""}">${dn[i]}<small>${d || "Rest"}</small></div>`).join("")}</div>
+  <p class="note">${p.why}</p>
+  <div class="days">${p.plan.map((d, di) => `
+    <section class="day">
+      <header><h3>${d.day}</h3><button class="btn primary" data-startday="${di}">Start session</button></header>
+      <ol>${d.items.map(([n, rx]) => `<li data-region="${EX[n].region}"><span class="dot"></span><span>${n}</span><span class="mono">${rx}</span></li>`).join("")}</ol>
+    </section>`).join("")}</div>
+  <div class="extra plan"><span class="eyebrow">Progression</span>${p.extra.map(x => `<p>${x}</p>`).join("")}</div>`;
+}
+
+function renderScience() {
+  return `
+  <div class="section-head">
+    <span class="eyebrow">What the research says</span>
+    <h2>The fastest realistic route</h2>
+    <p class="lead">These rules come from meta-analyses and controlled trials. Each links to PubMed so you can read the source. "Fastest" still has limits, and here they are.</p>
+  </div>
+  <div class="rates">
+    <div class="rate"><b>0.5–1%</b><span>of body weight lost per week is the fat-loss pace that best protects muscle.</span></div>
+    <div class="rate"><b>~0.25–0.5%</b><span>of body weight gained per month on a lean bulk for intermediates. Beginners can gain faster. (Coaching rule of thumb.)</span></div>
+    <div class="rate"><b>1.6–2.2 g/kg</b><span>of protein per day covers almost everyone's muscle-building needs.</span></div>
+  </div>
+  <div class="sci">${SCIENCE.map(s => `
+    <article class="claim">
+      <div class="k">${s.k}<small>${s.tag.toUpperCase()}</small></div>
+      <div class="v">
+        <p>${s.claim}</p>
+        <p class="do">${s.do}</p>
+        <div class="src">${s.src.map(x => `<a href="${pubmed(x)}" target="_blank" rel="noopener">${x}</a>`).join("")}</div>
+      </div>
+    </article>`).join("")}</div>`;
+}
+
+function calcFuel() {
+  const f = state.fuel;
+  const kg = f.unit === "lb" ? f.weight * 0.4536 : +f.weight;
+  const cm = f.unit === "lb" ? f.height * 2.54 : +f.height;
+  const bmr = 10 * kg + 6.25 * cm - 5 * f.age + (f.sex === "m" ? 5 : -161);
+  const tdee = bmr * f.activity;
+  let target = tdee, change = 0;
+  if (f.goal === "lose") { change = -(f.rate / 100) * kg * 7700 / 7; target = tdee + change; }
+  if (f.goal === "build") { change = tdee * 0.1; target = tdee + change; }
+  target = Math.max(target, f.sex === "m" ? 1500 : 1200);
+  const pLo = Math.round(kg * (f.goal === "lose" ? 1.8 : 1.6));
+  const pHi = Math.round(kg * (f.goal === "lose" ? 2.4 : 2.2));
+  const weekly = f.goal === "lose" ? kg * f.rate / 100 : f.goal === "build" ? kg * 0.0025 * 7 / 30 : 0;
+  return { kg, bmr, tdee, target, pLo, pHi, weekly };
+}
+
+function renderFuel() {
+  const f = state.fuel, r = calcFuel(), u = f.unit, hu = u === "lb" ? "in" : "cm";
+  const wkW = u === "lb" ? r.weekly / 0.4536 : r.weekly;
+  const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button type="button" data-fuel="${key}" data-val="${v}" aria-pressed="${String(f[key]) === String(v)}">${l}</button>`).join("")}</div>`;
+  return `
+  <div class="section-head">
+    <span class="eyebrow">Calories & protein</span>
+    <h2>Fuel your goal</h2>
+    <p class="lead">Uses the Mifflin–St Jeor equation, the most accurate common formula for resting energy needs. Treat the number as a starting point, then adjust by the scale after two weeks.</p>
+  </div>
+  <div class="fuel">
+    <form class="calc" id="calc">
+      <div class="field"><span class="lbl">Goal</span>${seg("goal", [["lose","Lose fat"],["recomp","Recomp"],["build","Build muscle"]])}</div>
+      ${f.goal === "lose" ? `<div class="field"><span class="lbl">Pace (% body weight / week)</span>${seg("rate", [[0.5,"0.5%"],[0.75,"0.75%"],[1,"1%"]])}</div>` : ""}
+      <div class="row2">
+        <div class="field"><span class="lbl">Sex</span>${seg("sex", [["m","Male"],["f","Female"]])}</div>
+        <div class="field"><span class="lbl">Units</span>${seg("unit", [["kg","kg/cm"],["lb","lb/in"]])}</div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-weight">Weight (${u})</label><input id="f-weight" type="number" inputmode="decimal" min="30" max="700" value="${f.weight}" data-num="weight"></div>
+        <div class="field"><label for="f-height">Height (${hu})</label><input id="f-height" type="number" inputmode="decimal" min="40" max="250" value="${f.height}" data-num="height"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="f-age">Age</label><input id="f-age" type="number" inputmode="numeric" min="14" max="100" value="${f.age}" data-num="age"></div>
+        <div class="field"><label for="f-activity">Activity</label>
+          <select id="f-activity" data-num="activity">
+            ${[[1.2,"Desk job, little exercise"],[1.375,"Light: 1–3 workouts"],[1.55,"Moderate: 3–5 workouts"],[1.725,"High: 6–7 workouts"],[1.9,"Very high: physical job + training"]]
+              .map(([v, l]) => `<option value="${v}" ${+f.activity === v ? "selected" : ""}>${l}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    </form>
+    <div class="out" id="fuel-out">${renderFuelOut(r, wkW)}</div>
+  </div>`;
+}
+function renderFuelOut(r, wkW) {
+  const f = state.fuel, u = unit();
+  const goalLine = f.goal === "lose" ? `Expected loss: <b class="mono">${wkW.toFixed(2)} ${u}/week</b>`
+    : f.goal === "build" ? `Expected gain: about <b class="mono">${(wkW * 4.3).toFixed(1)} ${u}/month</b> (more if you are new to lifting)`
+    : `Eat at maintenance, lift hard, and keep protein high. Best for beginners and people returning to training.`;
+  return `
+    <div class="big-row">
+      <div class="stat hero"><span class="eyebrow">Daily calories</span><div class="n">${Math.round(r.target / 10) * 10}<small> kcal</small></div></div>
+      <div class="stat"><span class="eyebrow">Protein / day</span><div class="n">${r.pLo}–${r.pHi}<small> g</small></div></div>
+      <div class="stat"><span class="eyebrow">Maintenance</span><div class="n">${Math.round(r.tdee / 10) * 10}<small> kcal</small></div></div>
+    </div>
+    <div class="plan">
+      <span class="eyebrow">Your plan</span>
+      <p style="margin:6px 0 0">${goalLine}</p>
+      <ul>
+        <li>Protein first: about ${Math.round(r.pHi / 4)} g across 4 meals.</li>
+        <li>Fill the rest of your calories with mostly whole foods. Keep fat at least 0.6 g/kg (${Math.round(r.kg * 0.6)} g) for hormone health.</li>
+        <li>Weigh yourself every morning and compare weekly averages. If the average does not move as expected for 2 weeks, change calories by 150–200.</li>
+        ${f.goal === "lose" ? "<li>Walk 8,000–10,000 steps a day and keep lifting heavy. Use the Full Body Fat Loss program.</li>" : "<li>Use the Upper / Lower program and add a rep or some weight every week.</li>"}
+        <li>Sleep 7–9 hours, and consider 3–5 g of creatine monohydrate daily.</li>
+      </ul>
+    </div>`;
+}
+
+function renderLog() {
+  const s = state.session, u = unit();
+  let html = `<div class="section-head"><span class="eyebrow">Training log</span><h2>Today's session</h2>
+    <p class="lead">Fill in weight and reps, tick each set, then finish. Your last result shows above each exercise so you know what to beat. Everything is saved on this device.</p></div>`;
+  if (!s) {
+    html += `<div class="empty"><p>No session running. Start a program day, or add exercises from the Workouts tab.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-goto="programs">Pick a program day</button><button class="btn" data-goto="workouts">Browse exercises</button></div></div>`;
+  } else {
+    const done = s.items.reduce((a, i) => a + i.sets.filter(x => x.done).length, 0);
+    const total = s.items.reduce((a, i) => a + i.sets.length, 0);
+    html += `<div class="sess-head"><div><h3>${esc(s.name)}</h3><span class="mono" style="color:var(--muted);font-size:13px">${done}/${total} sets done · started ${new Date(s.started).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${state.confirmDiscard
+          ? `<button class="btn danger" data-discard="yes">Yes, discard</button><button class="btn" data-discard="no">Keep</button>`
+          : `<button class="btn ghost" data-discard="ask">Discard</button>`}
+        <button class="btn primary" data-finish>Finish & save</button>
+      </div></div>
+      ${state.msg ? `<p class="msg">${esc(state.msg)}</p>` : ""}`;
+    s.items.forEach((it, i) => {
+      const e = EX[it.n], last = lastFor(it.n);
+      html += `<section class="log-ex" data-region="${e.region}">
+        <header><h3>${esc(it.n)}</h3><span class="mono" style="font-size:12px;color:var(--muted)">Target ${esc(it.rx)} · rest ${e.rest}</span></header>
+        <div class="last">${last ? `Last time (${fmtDate(last.date)}): best set <b class="mono">${last.best.w} ${u} × ${last.best.r}</b>. Beat it by a rep or a little weight.` : "First time logging this one. Pick a weight you can lift for the target reps with 1–3 reps to spare."}</div>
+        <div class="set-labels"><span>Set</span><span>${u}</span><span>Reps</span><span>Done</span><span></span></div>
+        <div class="sets">${it.sets.map((st, j) => `
+          <div class="set ${st.done ? "done" : ""}">
+            <span class="no">${j + 1}</span>
+            <input type="number" inputmode="decimal" id="w-${i}-${j}" data-set="${i}-${j}-w" value="${esc(st.w)}" placeholder="${last ? last.best.w : "–"}" aria-label="Weight set ${j + 1}">
+            <input type="number" inputmode="numeric" id="r-${i}-${j}" data-set="${i}-${j}-r" value="${esc(st.r)}" placeholder="${last ? last.best.r : "–"}" aria-label="Reps set ${j + 1}">
+            <button class="check" data-done="${i}-${j}" aria-pressed="${st.done}" aria-label="Mark set ${j + 1} done">✓</button>
+            <button class="x" data-delset="${i}-${j}" aria-label="Remove set ${j + 1}">×</button>
+          </div>`).join("")}</div>
+        <div style="display:flex;gap:8px"><button class="btn" data-addset="${i}">+ Set</button><button class="btn ghost" data-remove="${esc(it.n)}">Remove exercise</button></div>
+      </section>`;
+    });
+  }
+  html += `<div class="section-head" style="padding-top:32px"><span class="eyebrow">History</span><h2>Past sessions</h2></div>`;
+  if (!state.history.length) html += `<p class="lead">Finished sessions show up here.</p>`;
+  else html += `<div class="hist">${state.history.slice(0, 30).map(h => {
+    const vol = h.items.reduce((a, i) => a + i.sets.reduce((b, s) => b + s.w * s.r, 0), 0);
+    return `<details><summary><span>${esc(h.name)} ${h.sample ? '<span class="sample-tag">Example</span>' : ""}</span><span class="mono">${fmtDate(h.date)} · ${Math.round(vol).toLocaleString()} ${u} volume</span></summary>
+      <ul>${h.items.map(i => `<li>${esc(i.n)}: <span class="mono">${i.sets.map(s => `${s.w}×${s.r}`).join(", ")}</span></li>`).join("")}</ul></details>`;
+  }).join("")}</div>`;
+  return html;
+}
+
+function renderBar() {
+  const bar = $("#sessbar"), s = state.session;
+  if (!s || state.tab === "log") { bar.hidden = true; return; }
+  bar.hidden = false;
+  bar.innerHTML = `<div class="in"><span><b>${esc(s.name)}</b> · ${s.items.length} exercise${s.items.length === 1 ? "" : "s"}</span><button class="btn" data-goto="log">Open log →</button></div>`;
+}
+
+function render() {
+  renderTabs();
+  const app = $("#app");
+  app.innerHTML = ({ workouts: renderWorkouts, programs: renderPrograms, science: renderScience, fuel: renderFuel, log: renderLog }[state.tab])()
+    + `<p class="disclaimer">General education, not medical advice. Check with a doctor before starting if you have a health condition, injury, or are pregnant.</p>`;
+  renderBar();
+  save();
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("button");
+  if (!t) return;
+  const d = t.dataset;
+  if (d.tab || d.goto) { state.tab = d.tab || d.goto; state.msg = ""; state.confirmDiscard = false; history.replaceState(null, "", "#" + state.tab); render(); window.scrollTo(0, 0); return; }
+  if (d.muscle) { state.muscle = d.muscle; render(); return; }
+  if (d.add) { addToSession(d.add); render(); return; }
+  if (d.remove) { removeFromSession(d.remove); render(); return; }
+  if (d.program) { state.program = d.program; render(); return; }
+  if (d.startday !== undefined) {
+    const p = PROGRAMS.find(x => x.id === state.program), day = p.plan[+d.startday];
+    state.session = { started: Date.now(), name: `${p.name} · ${day.day}`, items: [] };
+    day.items.forEach(([n, rx]) => addToSession(n, rx));
+    state.tab = "log"; state.msg = ""; history.replaceState(null, "", "#log"); render(); window.scrollTo(0, 0); return;
+  }
+  if (d.fuel) {
+    const v = d.val, f = state.fuel;
+    if (d.fuel === "unit" && v !== f.unit) {
+      if (v === "lb") { f.weight = Math.round(f.weight / 0.4536); f.height = Math.round(f.height / 2.54); }
+      else { f.weight = Math.round(f.weight * 0.4536); f.height = Math.round(f.height * 2.54); }
+    }
+    f[d.fuel] = d.fuel === "rate" ? +v : v;
+    render(); return;
+  }
+  if (d.done) { const [i, j] = d.done.split("-").map(Number); const st = state.session.items[i].sets[j]; st.done = !st.done; state.msg = ""; render(); return; }
+  if (d.addset !== undefined) { const it = state.session.items[+d.addset]; const prev = it.sets[it.sets.length - 1] || {}; it.sets.push({ w: prev.w || "", r: "", done: false }); render(); return; }
+  if (d.delset) { const [i, j] = d.delset.split("-").map(Number); state.session.items[i].sets.splice(j, 1); render(); return; }
+  if (d.discard) {
+    if (d.discard === "ask") state.confirmDiscard = true;
+    else if (d.discard === "yes") { state.session = null; state.confirmDiscard = false; }
+    else state.confirmDiscard = false;
+    render(); return;
+  }
+  if (d.finish !== undefined) {
+    const items = state.session.items.map(it => ({ n: it.n, sets: it.sets.filter(s => s.done && +s.r > 0).map(s => ({ w: +s.w || 0, r: +s.r })) })).filter(it => it.sets.length);
+    if (!items.length) { state.msg = "Tick at least one set with reps filled in, then finish."; render(); return; }
+    state.history = state.history.filter(h => !h.sample);
+    state.history.unshift({ date: Date.now(), name: state.session.name, items });
+    state.session = null; state.msg = ""; render(); window.scrollTo(0, 0); return;
+  }
+});
+
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if (el.dataset.set) {
+    const [i, j, k] = el.dataset.set.split("-");
+    state.session.items[+i].sets[+j][k] = el.value;
+    store.set("session", state.session);
+  }
+  if (el.dataset.num) {
+    const v = parseFloat(el.value);
+    if (!isFinite(v) || v <= 0) return;
+    state.fuel[el.dataset.num] = v;
+    store.set("fuel", state.fuel);
+    const r = calcFuel();
+    const wkW = state.fuel.unit === "lb" ? r.weekly / 0.4536 : r.weekly;
+    $("#fuel-out").innerHTML = renderFuelOut(r, wkW);
+  }
+});
+document.addEventListener("submit", ev => ev.preventDefault());
+window.addEventListener("hashchange", () => {
+  const h = location.hash.slice(1);
+  if (TABS.some(t => t[0] === h) && h !== state.tab) { state.tab = h; render(); }
+});
+
+render();
+</script>
