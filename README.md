@@ -11,3 +11,20 @@ Open `index.html` in any browser. No build step; log data is saved in your brows
 - **Log**: sets, reps and weight, with your last best set shown so you know what to beat.
 
 General education, not medical advice.
+
+## Run it on your phone with Expo Go
+
+The `mobile/` folder is an Expo app that shows the same page inside a native WebView.
+
+1. Install **Expo Go** on your phone (App Store / Google Play).
+2. On your computer (Node 20+):
+   ```bash
+   git clone https://github.com/michaeltaiwo69-stack/gym.git
+   cd gym/mobile
+   npm install
+   npm start
+   ```
+3. Scan the QR code: iPhone with the Camera app, Android from inside Expo Go.
+   Your phone and computer must be on the same Wi-Fi. If they aren't, run `npx expo start --tunnel` instead.
+
+`npm start` re-copies `../index.html` into the app first, so edits to the web page show up on the phone.
